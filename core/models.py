@@ -17,4 +17,4 @@ class Expense(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f'{self.category} - {self.name}'
+        return f'{self.category} - {self.description}'

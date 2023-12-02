@@ -1,0 +1,106 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="{% static "css\styles.css" %}">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Expense Tracker</h1>
+            <!-- Add any header content or buttons as needed -->
+            <a href="add_expense.html">Add Expense</a>
+        </header>
+
+            <!-- Add Mini Cards Section -->
+            <!-- End Mini Cards Section -->
+
+        <main>
+            <div class="sidebar">
+                <!-- Sidebar content, like categories or filters -->
+                <h2>Categories</h2>
+                <!-- Add category links or buttons here -->
+
+                {% for category in category %}
+                    <h5>{{category.name}}</h5>
+                {% endfor %}
+            </div>
+
+            <div class="expenses">
+                <div class="mini-cards-container">
+                    <div class="mini-card">
+                        <h2>Balance</h2>
+                        <p>$1,000.00</p>
+                    </div>
+                
+                    <div class="mini-card">
+                        <h2>Total Expenses</h2>
+                        <p>${{total}}</p>
+                    </div>
+                
+                    <div class="mini-card">
+                        <h2>Total Income</h2>
+                        <p>$1,500.00</p>
+                    </div>
+                </div>
+                
+                <!-- Expense list goes here -->
+                {% comment %} <div class="expenses">
+                    <div class="expense-list">
+                        <div class="expense-item">
+                            <span>expense2</span>
+                            <span>$50</span>
+                        </div>
+                    </div>
+
+                    <div class="empty-section"></div>
+                </div> {% endcomment %}
+
+
+                <!-- New Cards -->
+                <div class="expenses">
+                    <div class="mini-cards-containert">
+                        <div class="mini-cardt">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Expense</th>
+                                <th>Amount</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for expense in expenses %}
+                            <tr>
+                                <td>{{expense.category}}</td>
+                                <td>
+                                    {{expense.description}} <br>
+                                    <small>
+                                        {{expense.created_on|date}}
+                                    </small>
+                                </td>
+                                <td>${{expense.amount}}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        </div>
+                        <div class="mini-cardt">
+                            <div class="expense-item">
+                                
+                            </div>
+                            <!-- Add more expense items as needed -->
+                        </div>
+                    </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
