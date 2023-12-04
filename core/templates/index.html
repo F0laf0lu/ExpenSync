@@ -1,127 +1,41 @@
-{% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker</title>
-    <link rel="stylesheet" href="{% static "css\styles.css" %}">
-</head>
-
-<body>
-    <div class="app-container">
-        <header>
-            <h1>Expense Tracker</h1>
-            <!-- Add any header content or buttons as needed -->
-            <a href="{% url "add-expense" %}"><button>Add Expense</button></a>
-            <a href="#"><button>Logout</button></a>
-        </header>
-
-            <!-- Add Mini Cards Section -->
-            <!-- End Mini Cards Section -->
-
-        <main>
-            <div class="sidebar">
-                <!-- Sidebar content, like categories or filters -->
-
-                <div class="sidebar-content">
-                    <div>
-                        <a href="{% url "home" %}"><h2>Dashboard</h2></a>
-                    </div>
-
-                    <div>
-                        <a href="{% url "expense" %}"><h2>Expenses</h2></a>
-                    </div>
-                
-                    <div>
-                        <a href="#"><h2>Reports</h2></a>
-                    </div>
-                    
-                    <div>
-                        <a href="#"><h2>Settings</h2></a>
-                    </div>
-                </div>
-                <!-- Add category links or buttons here -->
-
-            </div>
-
-            <div class="expenses">
-                <div class="mini-cards-container">
-                    <div class="mini-card">
-                        <h2>Balance</h2>
-                        <p>$1,000.00</p>
-                    </div>
-                
-                    <div class="mini-card">
-                        <h2>Total Expenses</h2>
-                        <p>${{total}}</p>
-                    </div>
-                
-                    <div class="mini-card">
-                        <h2>Total Income</h2>
-                        <p>$1,500.00</p>
-                    </div>
-                </div>
-                
-                <!-- Expense list goes here -->
-                {% comment %} <div class="expenses">
-                    <div class="expense-list">
-                        <div class="expense-item">
-                            <span>expense2</span>
-                            <span>$50</span>
-                        </div>
-                    </div>
-
-                    <div class="empty-section"></div>
-                </div> {% endcomment %}
-
-
-                <!-- New Cards -->
-                <div class="expenses">
-                    <div class="mini-cards-containert">
-                        <div class="mini-cardt">
-                        <table>
-                            <h2>Recent Transactions</h2> <hr>
-                            <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Expense</th>
-                                <th>Amount</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for expense in expenses %}
-                            <tr>
-                                <td>{{expense.category}}</td>
-                                <td>
-                                    {{expense.description}} <br>
-                                    <a href="{% url "delete-expense" expense.id %}"><button>Delete</button></a><br>
-                                    <small>
-                                        {{expense.created_on|date:"Y-m-d"}}
-                                        {{expense.created_on|time}}
-                                    </small>
-                                </td>
-                                <td>${{expense.amount}}</td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                        </div>
-                        <div class="mini-cardt">
-                            <h2>Summary</h2> <hr>
-                            {% for category in category  %}
-                            <div class="expense-item">
-                                {{category}}
-                            </div>
-                            {% endfor %}
-                            <!-- Add more expense items as needed -->
-                        </div>
-                    </div>
-            </div>
-        </main>
+{% extends "base.html" %}
+    {% block content %}
+    <div class="mini-cardt">
+    <table>
+        <h2>Recent Transactions</h2> <hr>
+        <thead>
+        <tr>
+            <th>Category</th>
+            <th>Expense</th>
+            <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for expense in expenses %}
+        <tr>
+            <td>{{expense.category}}</td>
+            <td>
+                {{expense.description}} <br>
+                <a href="{% url "delete-expense" expense.id %}"><button>Delete</button></a><br>
+                <small>
+                    {{expense.created_on|date:"Y-m-d"}}
+                    {{expense.created_on|time}}
+                </small>
+            </td>
+            <td>${{expense.amount}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
     </div>
-</body>
-
-</html>
+    <div class="mini-cardt">
+        <h2>Top Categories</h2> <hr>
+        {% for category in category  %}
+        <div class="expense-item">
+            {{category}}
+        </div>
+        {% endfor %}
+        <!-- Add more expense items as needed -->
+    </div>
+    {% endblock content %}

@@ -21,7 +21,6 @@
 
             <!-- Add Mini Cards Section -->
             <!-- End Mini Cards Section -->
-
         <main>
             <div class="sidebar">
                 <!-- Sidebar content, like categories or filters -->
@@ -32,7 +31,7 @@
                     </div>
 
                     <div>
-                        <a href="#"><h2>Expenses</h2></a>
+                        <a href="{% url "expense" %}"><h2>Expenses</h2></a>
                     </div>
                 
                     <div>
@@ -88,6 +87,14 @@
             </div>
         </main>
     </div>
+    <script>
+    function applyFilter() {
+      // Logic to apply filter based on the selected option
+        const selectedFilter = document.getElementById('timeFilter').value;
+      // Implement your logic to filter the table based on the selectedFilter
+        console.log(`Filtering table for: ${selectedFilter}`);
+    }
+    </script>
 </body>
 
 </html>

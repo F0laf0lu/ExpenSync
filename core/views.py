@@ -8,10 +8,13 @@ def home(request):
     user_id = request.user.id
     expenses = Expense.objects.filter(
         user=user_id).order_by("-created_on")[0:5]
-    category = Category.objects.filter(user=user_id)
+    category = Category.objects.filter(user=user_id) 
 
     total = Expense.objects.filter(
             user=user_id).aggregate(Sum('amount'))['amount__sum']
+    
+    category_count = Category.objects.get(user=user_id).expenses.all().count 
+    
     context = {
         'expenses' : expenses,
         'category':category,

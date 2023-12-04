@@ -183,3 +183,12 @@ td {
 .mini-cardt th {
     background-color: #f2f2f2;
 }
+
+
+.filter-container {
+    margin-top: 20px;
+}
+
+.filter-container label {
+    margin-right: 0px;
+}
