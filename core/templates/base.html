@@ -32,7 +32,7 @@
                     </div>
 
                     <div>
-                        <a href="{% url "expense" %}"><h2>Expenses</h2></a>
+                        <a href="#"><h2>Expenses</h2></a>
                     </div>
                 
                     <div>
@@ -77,48 +77,14 @@
                     <div class="empty-section"></div>
                 </div> {% endcomment %}
 
-
+                
                 <!-- New Cards -->
                 <div class="expenses">
                     <div class="mini-cards-containert">
-                        <div class="mini-cardt">
-                        <table>
-                            <h2>Recent Transactions</h2> <hr>
-                            <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Expense</th>
-                                <th>Amount</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for expense in expenses %}
-                            <tr>
-                                <td>{{expense.category}}</td>
-                                <td>
-                                    {{expense.description}} <br>
-                                    <a href="{% url "delete-expense" expense.id %}"><button>Delete</button></a><br>
-                                    <small>
-                                        {{expense.created_on|date:"Y-m-d"}}
-                                        {{expense.created_on|time}}
-                                    </small>
-                                </td>
-                                <td>${{expense.amount}}</td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                        </div>
-                        <div class="mini-cardt">
-                            <h2>Summary</h2> <hr>
-                            {% for category in category  %}
-                            <div class="expense-item">
-                                {{category}}
-                            </div>
-                            {% endfor %}
-                            <!-- Add more expense items as needed -->
-                        </div>
-                    </div>
+                        {% block content %}
+                        {% endblock content %}
+                </div>
+                
             </div>
         </main>
     </div>

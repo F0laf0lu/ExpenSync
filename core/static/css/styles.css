@@ -32,6 +32,15 @@ main {
     padding: 15px;
     border-radius: 5px;
 }
+.sidebar .sidebar-content {
+    margin-top: 100px;
+}
+
+.sidebar div a {
+    color: #ddd;
+    text-decoration: none;
+    text-align: center;
+}
 
 .expenses {
     display: flex;
