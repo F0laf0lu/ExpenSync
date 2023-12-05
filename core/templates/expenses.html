@@ -6,19 +6,28 @@
         <div class="mini-cardt">
         <table>
             <h2>All Transactions</h2> <hr>
+
+        {% comment %} Search {% endcomment %}
+
         <div>
-            <input type="search" name="search" id="" autocomplete="off">
-            <input type="button" value="search">
+            <form action="{% url "search-filter" %}" method='get'>
+                <input type="search" name="q" id="" value="{{query}}" autocomplete="off">
+                <input type="submit" value="search">
+            </form>
         </div>
+
+
+
         <div class="filter-container">
-            <select id="timeFilter" name="timeFilter">
-                <option>-------</option>
-                <option value="thisWeek">Today</option>
-                <option value="thisWeek">This Week</option>
-                <option value="thisMonth">This Month</option>
-                <option value="thisYear">This Year</option>
+        <form action="{% url "search-filter" %}" method='get'>
+            <select id="timeFilter" name="timefilter">
+                <option >{{timequery}}</option>
+                <option value="thisweek">This Week</option>
+                <option value="thismonth">This Month</option>
+                <option value="thisyear">This Year</option>
             </select>
             <button type="submit">Apply Filter</button>
+        </form>
         </div>
 
             <hr>
