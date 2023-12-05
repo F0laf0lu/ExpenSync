@@ -17,7 +17,8 @@
             <td>{{expense.category}}</td>
             <td>
                 {{expense.description}} <br>
-                <a href="{% url "delete-expense" expense.id %}"><button>Delete</button></a><br>
+                <a href="{% url "delete-expense" expense.id %}"><button>Delete</button></a>
+                <a href="{% url "delete-expense" expense.id %}"><button>Update</button></a><br>
                 <small>
                     {{expense.created_on|date:"Y-m-d"}}
                     {{expense.created_on|time}}
@@ -31,11 +32,21 @@
     </div>
     <div class="mini-cardt">
         <h2>Top Categories</h2> <hr>
-        {% for category in category  %}
+        <h2>By number of expenses</h2><hr>
+        {% for category in cat_count  %}
         <div class="expense-item">
-            {{category}}
+            {{category}} - {{category.expense_len}}
         </div>
         {% endfor %}
-        <!-- Add more expense items as needed -->
+        <hr>
+
+        <h2>By amount of expenses</h2><hr>
+        {% for category in cat_sum  %}
+        <div class="expense-item">
+            {{category}} - ${{category.expense_sum}}
+        </div>
+        {% endfor %}
+        <hr>
+
     </div>
     {% endblock content %}

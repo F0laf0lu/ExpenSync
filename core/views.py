@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render
 from core.models import Expense, Category
-from django.db.models import Sum
+from django.db.models import Sum, Count
 
 # Create your views here.
 
@@ -10,15 +10,24 @@ def home(request):
         user=user_id).order_by("-created_on")[0:5]
     category = Category.objects.filter(user=user_id) 
 
+    # Get number of expenses in a category
+    cat_count = Category.objects.annotate(expense_len = Count("expenses"))
+    cat_count = cat_count.order_by("-expense_len")[:5]
+
+    # Get number of expenses in a category
+    cat_sum = Category.objects.annotate(expense_sum = Sum("expenses__amount"))
+    cat_sum = cat_sum.order_by("-expense_sum")[:5]
+
     total = Expense.objects.filter(
             user=user_id).aggregate(Sum('amount'))['amount__sum']
-    
-    category_count = Category.objects.get(user=user_id).expenses.all().count 
+
     
     context = {
         'expenses' : expenses,
         'category':category,
-        'total':total
+        'total':total,
+        'cat_count':cat_count, 
+        "cat_sum": cat_sum
     }
 
     return render (request, 'index.html', context)
@@ -28,12 +37,14 @@ def expenses(request):
     total = 0
     expenses = Expense.objects.filter(
         user=user_id).order_by("-created_on")
+    category = Category.objects.filter(user=user_id)
     for i in expenses:
         total += i.amount
 
     context = {
         'expenses' : expenses,
-        'total':total
+        'total':total,
+        'category':category
     }
 
     return render(request, 'expenses.html', context)
@@ -74,3 +85,6 @@ def deleteexpense(request, id):
         'expense':expense
     }
     return render(request, "delete_expense.html", context)
+
+def updateexpense():
+    pass
