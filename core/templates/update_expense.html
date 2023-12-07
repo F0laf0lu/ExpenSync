@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Expense</title>
+    <title>Expense Form</title>
     <link rel="stylesheet" href="{% static "css\styles.css" %}">
     <style>
         body {
@@ -71,18 +71,19 @@
 <body>
     <div class="app-container">
         <header>
-            <h1>Add Expense</h1>
+            <h1>Expense Form</h1>
             <a href="{% url "home" %}"><button>Back to Home</button></a>
         </header>
 
         <div class="add-expense-form" id="expenseFormContainer">
-            <form action='' method='POST' id="expenseForm">
+            <form action="" method='POST' id="expenseForm">
                 {% csrf_token %}
                 <label for="amount" >Amount:</label>
-                <input type="text" id="amount" name="amount" autocomplete="off" required >
+                <input type="text" id="amount" value="{{expense.amount}}" name="amount" autocomplete="off" required >
+
                 
                 <label for="category">Category:</label>
-                <input list="category-list" type="text" name="category" id="category" autocomplete="off">
+                <input list="category-list" type="text" value="{{expense.category}}" name="category" id="category" autocomplete="off">
                     <datalist id="category-list">
                         {% for category in category_list %}
                         <option value="{{category.name}}">
@@ -92,14 +93,14 @@
                     </datalist>
 
                 <label for="description">Description:</label>
-                <input type="text" id="description" name="description" autocomplete="off" required>
+                <input type="text" id="description" value="{{expense.description}}" name="description" autocomplete="off" required>
 
                 <button type="submit">Submit</button>
             </form>
         </div>
 
         <footer>
-            <!-- (Existing content remains unchanged) -->
+            
         </footer>
     </div>
 </body>

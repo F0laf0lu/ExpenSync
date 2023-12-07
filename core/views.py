@@ -1,9 +1,12 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from core.models import Expense, Category
 from django.db.models import Sum, Count
 from django.utils import timezone
+from datetime import datetime
 import calendar
+from django.core.paginator import Paginator
 from datetime import timedelta   
+
 
 
 current_date = timezone.now()
@@ -65,19 +68,27 @@ def expenses(request):
     
     category = Category.objects.filter(user=user_id)
 
+
+    # paginator = Paginator(expenses, 5)
+    # page_number = request.GET.get("page")
+    # page_obj = paginator.get_page(page_number)
+
+
     total = Expense.objects.filter(
             user=user_id).aggregate(Sum('amount'))['amount__sum']
 
     context = {
         'expenses' : expenses,
         'total':total,
-        'category':category
+        'category':category,
+        # 'page_obj':page_obj
     }
 
     return render(request, 'expenses.html', context)
 
 def transationfilters(request):
     user_id = request.user
+    category = Category.objects.filter(user=user_id)
     total = Expense.objects.filter(
             user=user_id).aggregate(Sum('amount'))['amount__sum']
     expenses = ""
@@ -92,12 +103,29 @@ def transationfilters(request):
     timequery = request.GET.get('timefilter')
     if timequery == 'thisweek':
         start_week, end_week = get_week_range(current_date)
-        expenses = Expense.objects.filter(created_on__range=(start_week, end_week))
+        expenses = Expense.objects.filter(created_on__range=(start_week, end_week)).order_by("-created_on")
     if timequery == 'thismonth':
         start_month, end_month = get_month_range(current_date)
         expenses = Expense.objects.filter(created_on__range=(start_month, end_month))
     if timequery == 'thisyear':
         expenses = Expense.objects.filter(created_on__year=2023) #fix year
+
+    # date range
+    date_from_obj = datetime.strptime(request.GET.get('date_from'), "%Y-%m-%d")
+    date_from = timezone.make_aware(date_from_obj)
+
+    date_to_obj = datetime.strptime(request.GET.get('date_to'), "%Y-%m-%d")
+    date_to = timezone.make_aware(date_to_obj)
+    if date_from:
+        if date_to:
+            expenses = Expense.objects.filter(created_on__date__range=(date_from, date_to))
+
+    # Category Query
+    cat_query = request.GET.get("category_query")
+    cat = Category.objects.get(name=cat_query)
+
+    if cat_query:
+        expenses = cat.expenses.all()
 
     context = {
     'query':query,
@@ -105,9 +133,11 @@ def transationfilters(request):
     'expenses' : expenses,
     'total':total,
     'expenses':expenses,
+    'category':category
     }
     
     return render(request, "expenses.html", context)
+
 
 def addexpense(request):
     user = request.user
@@ -131,6 +161,7 @@ def addexpense(request):
 
     return render (request, 'add_expense.html', context)
 
+
 def deleteexpense(request, id):
     expense = Expense.objects.get(id=id)
     category = expense.category
@@ -145,5 +176,28 @@ def deleteexpense(request, id):
     }
     return render(request, "delete_expense.html", context)
 
-def updateexpense():
-    pass
+
+def updateexpense(request, id):
+    user = request.user
+    expense = get_object_or_404(Expense, id=id)
+    category_list = Category.objects.filter(user=user)
+    
+    if request.method == 'POST':
+        category, created = Category.objects.get_or_create(
+            name=request.POST.get('category'),
+            user=user)
+
+        expense.amount = request.POST.get('amount')
+        expense.category = category
+        expense.description = request.POST.get('description')
+        expense.save()
+        return redirect("home")
+    context = {
+        'category_list':category_list, 
+        'expense':expense 
+    }
+    return render (request, 'update_expense.html', context)
+
+
+def reports(request):
+    return render(request, 'reports.html')
