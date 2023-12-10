@@ -1,7 +1,7 @@
 from django.contrib import admin
-from core.models import Category, Expense
+from core.models import Category, Transaction
 
 # Register your models here.
 
 admin.site.register(Category)
-admin.site.register(Expense)
+admin.site.register(Transaction)

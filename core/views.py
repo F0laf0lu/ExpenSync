@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, redirect, render
-from core.models import Expense, Category
+from core.models import Transaction, Category
 from django.db.models import Sum, Count
 from django.utils import timezone
 from datetime import datetime
@@ -10,6 +10,7 @@ from datetime import timedelta
 
 
 current_date = timezone.now()
+print(current_date)
 
 def get_month_range(input_date):
     # Get the first day of the month
@@ -35,19 +36,19 @@ def get_week_range(input_date):
 
 def home(request):
     user_id = request.user.id
-    expenses = Expense.objects.filter(
+    expenses = Transaction.objects.filter(
         user=user_id).order_by("-created_on")[0:5]
     category = Category.objects.filter(user=user_id) 
 
     # Get number of expenses in a category
-    cat_count = Category.objects.annotate(expense_len = Count("expenses"))
+    cat_count = Category.objects.annotate(expense_len = Count("transactions"))
     cat_count = cat_count.order_by("-expense_len")[:5]
 
     # Get number of expenses in a category
-    cat_sum = Category.objects.annotate(expense_sum = Sum("expenses__amount"))
+    cat_sum = Category.objects.annotate(expense_sum = Sum("transactions__amount"))
     cat_sum = cat_sum.order_by("-expense_sum")[:5]
 
-    total = Expense.objects.filter(
+    total = Transaction.objects.filter(
             user=user_id).aggregate(Sum('amount'))['amount__sum']
 
     
@@ -63,7 +64,7 @@ def home(request):
 
 def expenses(request):
     user_id = request.user
-    expenses = Expense.objects.filter(
+    expenses = Transaction.objects.filter(
         user=user_id).order_by("-created_on")
     
     category = Category.objects.filter(user=user_id)
@@ -74,7 +75,7 @@ def expenses(request):
     # page_obj = paginator.get_page(page_number)
 
 
-    total = Expense.objects.filter(
+    total = Transaction.objects.filter(
             user=user_id).aggregate(Sum('amount'))['amount__sum']
 
     context = {
@@ -89,26 +90,26 @@ def expenses(request):
 def transationfilters(request):
     user_id = request.user
     category = Category.objects.filter(user=user_id)
-    total = Expense.objects.filter(
+    total = Transaction.objects.filter(
             user=user_id).aggregate(Sum('amount'))['amount__sum']
     expenses = ""
     # Search Query
     query = request.GET.get('q')
 
     if query:
-        expenses = Expense.objects.filter(description__icontains=query)
+        expenses =Transaction.objects.filter(description__icontains=query)
         
 
     # Time Filter
     timequery = request.GET.get('timefilter')
     if timequery == 'thisweek':
         start_week, end_week = get_week_range(current_date)
-        expenses = Expense.objects.filter(created_on__range=(start_week, end_week)).order_by("-created_on")
+        expenses = Transaction.objects.filter(created_on__range=(start_week, end_week)).order_by("-created_on")
     if timequery == 'thismonth':
         start_month, end_month = get_month_range(current_date)
-        expenses = Expense.objects.filter(created_on__range=(start_month, end_month))
+        expenses = Transaction.objects.filter(created_on__range=(start_month, end_month))
     if timequery == 'thisyear':
-        expenses = Expense.objects.filter(created_on__year=2023) #fix year
+        expenses = Transaction.objects.filter(created_on__year=2023) #fix year
 
     # date range
     date_from_obj = datetime.strptime(request.GET.get('date_from'), "%Y-%m-%d")
@@ -118,7 +119,7 @@ def transationfilters(request):
     date_to = timezone.make_aware(date_to_obj)
     if date_from:
         if date_to:
-            expenses = Expense.objects.filter(created_on__date__range=(date_from, date_to))
+            expenses = Transaction.objects.filter(created_on__date__range=(date_from, date_to))
 
     # Category Query
     cat_query = request.GET.get("category_query")
@@ -148,7 +149,7 @@ def addexpense(request):
             name=request.POST.get('category'),
             user=user)
 
-        Expense.objects.create(
+        Transaction.objects.create(
             user = request.user,
             amount = request.POST.get('amount'),
             description = request.POST.get('description'),
@@ -163,11 +164,11 @@ def addexpense(request):
 
 
 def deleteexpense(request, id):
-    expense = Expense.objects.get(id=id)
+    expense = Transaction.objects.get(id=id)
     category = expense.category
     if request.method == 'POST':
         expense.delete()
-        if Expense.objects.filter(category=category).count() == 0:
+        if Transaction.objects.filter(category=category).count() == 0:
             category.delete()
         return redirect("home")
     
@@ -179,7 +180,7 @@ def deleteexpense(request, id):
 
 def updateexpense(request, id):
     user = request.user
-    expense = get_object_or_404(Expense, id=id)
+    expense = get_object_or_404(Transaction, id=id)
     category_list = Category.objects.filter(user=user)
     
     if request.method == 'POST':
