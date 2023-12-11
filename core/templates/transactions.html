@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block nav %}
+        <h1>All Transactions</h1>
+        <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-item active">Transaction </li>
+        </ol>
+{% endblock nav %}
+
+{% block section %}
+    <section class="section dashboard">
+      <div class="row">
+
+        <!-- Left side columns -->
+        <div class="col-lg-6">
+
+          <div class="row">
+            <!-- Recent Sales -->
+            <div class="col-12">
+              <div class="card recent-sales overflow-auto">
+                <div class="card-body">
+                <h2 class="card-title"> Transactions </h2>
+                <hr>
+                <table class="table datatable">
+                  <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Amount</th>
+                        
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for data in transactions %}
+                    <tr>
+                      <td>{{data.transaction_type}}</td>
+                      <td><a href="#" class="text-primary">{{data.category}}</a></td>
+                      <th scope="row"><a href="{% url "update-expense" data.id %}">{{data.description}}</a><br>
+                      </th>
+                      <td>${{data.amount|intcomma}}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                </div>
+
+              </div>
+            </div><!-- End Recent Sales -->
+          </div>
+        </div><!-- End Left side columns -->
+
+
+        <!-- Right side columns -->
+        
+        <div class="col-lg-6">
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Transaction</h5>
+              <hr>
+
+              
+              <div class="activity">
+              <!-- Floating Labels Form -->
+              {% if view_name %}
+              <form method="POST" class="row g-3">
+                {% csrf_token %}
+                <div class="col-md-12">
+                  <div class="form-floating">
+                    {{updateform.description}}
+                    <label class="form-label">Description</label>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    {{updateform.amount}}
+                    <label for="amount" class="form-label">Amount</label>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    {{updateform.transaction_type}}
+                    <label class="form-label">Type</label>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-floating mb-3">
+                    <input list="category-list" class="form-control" type="text" name="category" id="category" value="{{category_data.name}}" autocomplete="off">
+                    <div>
+                    <datalist id="category-list">
+                        {% for category in category_list %}
+                            <option value="{{ category.name}}">
+                                {{category.name}}
+                            </option>
+                        {% endfor %}
+                    </datalist>
+                    </div>
+                    <label>Category</label>
+                  </div>
+                </div>
+
+
+                <div class="text-center">
+                  <button type="submit" name="submit_button" value="update-expense" class="btn btn-primary">Submit</button>
+                  <button type="submit" name="submit_button" value="delete-expense" class="btn btn-danger">Delete</button>
+                </div>
+              </form><!-- End floating Labels Form -->
+              {% endif %}
+              </div>
+
+            </div>
+          </div><!-- End Recent Activity -->
+
+
+        </div><!-- End Right side columns -->
+        
+
+      </div>
+    </section>
+{% endblock section %}

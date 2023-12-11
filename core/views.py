@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from core.models import Transaction, Category
+from . forms import TransactionForm
 from django.db.models import Sum, Count
 from django.utils import timezone
 from datetime import datetime
@@ -10,7 +11,6 @@ from datetime import timedelta
 
 
 current_date = timezone.now()
-print(current_date)
 
 def get_month_range(input_date):
     # Get the first day of the month
@@ -35,37 +35,46 @@ def get_week_range(input_date):
 # Views
 
 def home(request):
+    form = TransactionForm()
     user_id = request.user.id
-    expenses = Transaction.objects.filter(
+    
+    transactions = Transaction.objects.filter(
         user=user_id).order_by("-created_on")[0:5]
+    
     category = Category.objects.filter(user=user_id) 
 
-    # Get number of expenses in a category
-    cat_count = Category.objects.annotate(expense_len = Count("transactions"))
-    cat_count = cat_count.order_by("-expense_len")[:5]
-
-    # Get number of expenses in a category
-    cat_sum = Category.objects.annotate(expense_sum = Sum("transactions__amount"))
-    cat_sum = cat_sum.order_by("-expense_sum")[:5]
-
-    total = Transaction.objects.filter(
-            user=user_id).aggregate(Sum('amount'))['amount__sum']
-
+    income_total = Transaction.objects.filter(
+            user=user_id).filter(transaction_type="income").aggregate(Sum('amount'))['amount__sum']
     
+    if income_total is None:
+        income_total = 0
+
+    expense_total = Transaction.objects.filter(
+            user=user_id).filter(transaction_type="expense").aggregate(Sum('amount'))['amount__sum']
+    
+    if expense_total is None:
+        expense_total = 0
+        balance = income_total - expense_total
+    else:
+        balance = income_total - expense_total
+        
     context = {
-        'expenses' : expenses,
+        'transactions' : transactions,
         'category':category,
-        'total':total,
-        'cat_count':cat_count, 
-        "cat_sum": cat_sum
+        'expense_total':expense_total,
+        'income_total':income_total,
+        'balance':balance,
+        'form':form
     }
 
     return render (request, 'index.html', context)
 
-def expenses(request):
+
+def transactions(request): 
+    form = TransactionForm()
     user_id = request.user
-    expenses = Transaction.objects.filter(
-        user=user_id).order_by("-created_on")
+    transactions = Transaction.objects.filter(
+        user=user_id).order_by("-updated_on","-created_on")
     
     category = Category.objects.filter(user=user_id)
 
@@ -79,13 +88,14 @@ def expenses(request):
             user=user_id).aggregate(Sum('amount'))['amount__sum']
 
     context = {
-        'expenses' : expenses,
+        'transactions' : transactions,
         'total':total,
         'category':category,
-        # 'page_obj':page_obj
+        # 'page_obj':page_obj,
+        'form':form
     }
 
-    return render(request, 'expenses.html', context)
+    return render(request, 'transactions.html', context)
 
 def transationfilters(request):
     user_id = request.user
@@ -137,31 +147,71 @@ def transationfilters(request):
     'category':category
     }
     
-    return render(request, "expenses.html", context)
+    return render(request, "transactions.html", context)
+
 
 
 def addexpense(request):
     user = request.user
-    category_list = Category.objects.filter(user=user)
+    if request.method == 'POST':
+            category_name = request.POST.get('category')
+            category, created = Category.objects.get_or_create(name=category_name)
+
+            trans_type = request.POST.get('transaction_type')
+            amount = request.POST.get('amount')
+            description = request.POST.get('description')
+
+            Transaction.objects.create(
+                user=user,
+                category=category,
+                transaction_type=trans_type,
+                amount=amount,
+                description=description
+            )
+            
+            return redirect("home")
     
+    return redirect("home")
+
+
+def updateexpense(request, id):
+    view_name = "update"
+    user = request.user
+    form = TransactionForm()
+    transaction = get_object_or_404(Transaction, id=id)
+    category_data = transaction.category
+
+    updateform = TransactionForm(instance=transaction)
+    category_list = Category.objects.filter(user=user)
+    transactions = Transaction.objects.filter(user=user).order_by("-updated_on","-created_on")
+
     if request.method == 'POST':
         category, created = Category.objects.get_or_create(
             name=request.POST.get('category'),
             user=user)
 
-        Transaction.objects.create(
-            user = request.user,
-            amount = request.POST.get('amount'),
-            description = request.POST.get('description'),
-            category = category
-        )
-        return redirect("home")
+        if request.POST.get('submit_button') == 'update-expense':
+            updateform = TransactionForm(request.POST, instance=transaction)
+            Transaction.objects.filter(id=id).update(
+                description=request.POST.get('description'),
+                amount=request.POST.get('amount'),
+                transaction_type=request.POST.get('transaction_type'),
+                category=category,
+            ) 
+            return redirect("transaction") 
+        elif request.POST.get('submit_button') == 'delete-expense':
+            return redirect("delete-expense", transaction.id )
+
     context = {
-        'category_list':category_list
+        'category_list':category_list, 
+        'category_data':category_data,
+        'transaction':transaction,
+        'transactions':transactions,
+        'updateform':updateform,
+        'view_name':view_name,
+        'form':form
     }
-
-    return render (request, 'add_expense.html', context)
-
+    return render (request, 'transactions.html', context)
 
 def deleteexpense(request, id):
     expense = Transaction.objects.get(id=id)
@@ -176,28 +226,6 @@ def deleteexpense(request, id):
         'expense':expense
     }
     return render(request, "delete_expense.html", context)
-
-
-def updateexpense(request, id):
-    user = request.user
-    expense = get_object_or_404(Transaction, id=id)
-    category_list = Category.objects.filter(user=user)
-    
-    if request.method == 'POST':
-        category, created = Category.objects.get_or_create(
-            name=request.POST.get('category'),
-            user=user)
-
-        expense.amount = request.POST.get('amount')
-        expense.category = category
-        expense.description = request.POST.get('description')
-        expense.save()
-        return redirect("home")
-    context = {
-        'category_list':category_list, 
-        'expense':expense 
-    }
-    return render (request, 'update_expense.html', context)
 
 
 def reports(request):

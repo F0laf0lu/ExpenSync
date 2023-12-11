@@ -1,0 +1,52 @@
+
+{% extends "base.html" %}
+    {% block content %}
+    <div class="mini-cardt">
+    <table>
+        <h2>Recent Transactions</h2> <hr>
+        <thead>
+        <tr>
+            <th>Category</th>
+            <th>Expense</th>
+            <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for expense in expenses %}
+        <tr>
+            <td>{{expense.category}}</td>
+            <td>
+                {{expense.description}} <br>
+                <a href="{% url "delete-expense" expense.id %}"><button>Delete</button></a>
+                <a href="{% url "update-expense" expense.id %}"><button>Update</button></a><br>
+                <small>
+                    {{expense.created_on|date:"Y-m-d"}}
+                    {{expense.created_on|time}}
+                </small>
+            </td>
+            <td>${{expense.amount}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div class="mini-cardt">
+        <h2>Top Categories</h2> <hr>
+        <h2>By number of expenses</h2><hr>
+        {% for category in cat_count  %}
+        <div class="expense-item">
+            {{category}} - {{category.expense_len}}
+        </div>
+        {% endfor %}
+        <hr>
+
+        <h2>By amount of expenses</h2><hr>
+        {% for category in cat_sum  %}
+        <div class="expense-item">
+            {{category}} - ${{category.expense_sum}}
+        </div>
+        {% endfor %}
+        <hr>
+
+    </div>
+    {% endblock content %}
