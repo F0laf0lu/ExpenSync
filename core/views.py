@@ -32,8 +32,12 @@ def get_week_range(input_date):
     return start_of_week, end_of_week
 
 
-# Views
+# custom 404 view
+def custom_404(request, exception):
+    return render(request, 'core/404.html', status=404)
 
+
+# Views
 def home(request):
     form = TransactionForm()
     user_id = request.user.id
@@ -43,8 +47,7 @@ def home(request):
     
     category = Category.objects.filter(user=user_id) 
 
-    income_total = Transaction.objects.filter(
-            user=user_id).filter(transaction_type="income").aggregate(Sum('amount'))['amount__sum']
+    income_total = Transaction.objects.filter(user=user_id).filter(transaction_type="income").aggregate(Sum('amount'))['amount__sum']
     
     if income_total is None:
         income_total = 0
@@ -58,17 +61,24 @@ def home(request):
     else:
         balance = income_total - expense_total
         
+    data = []
+    expense_category = Category.objects.filter(
+        transactions__transaction_type='expense').filter(user=user_id).annotate(sum = Sum('transactions__amount'))
+    cat = expense_category.values('name','sum')
+    for i in cat:
+        data.append((i['name'], i['sum']))
+
+
+
     context = {
         'transactions' : transactions,
         'category':category,
         'expense_total':expense_total,
         'income_total':income_total,
         'balance':balance,
-        'form':form
+        'form':form, 
     }
-
     return render (request, 'index.html', context)
-
 
 def transactions(request): 
     form = TransactionForm()
@@ -78,12 +88,6 @@ def transactions(request):
     
     category = Category.objects.filter(user=user_id)
 
-
-    # paginator = Paginator(expenses, 5)
-    # page_number = request.GET.get("page")
-    # page_obj = paginator.get_page(page_number)
-
-
     total = Transaction.objects.filter(
             user=user_id).aggregate(Sum('amount'))['amount__sum']
 
@@ -91,65 +95,10 @@ def transactions(request):
         'transactions' : transactions,
         'total':total,
         'category':category,
-        # 'page_obj':page_obj,
         'form':form
     }
 
     return render(request, 'transactions.html', context)
-
-def transationfilters(request):
-    user_id = request.user
-    category = Category.objects.filter(user=user_id)
-    total = Transaction.objects.filter(
-            user=user_id).aggregate(Sum('amount'))['amount__sum']
-    expenses = ""
-    # Search Query
-    query = request.GET.get('q')
-
-    if query:
-        expenses =Transaction.objects.filter(description__icontains=query)
-        
-
-    # Time Filter
-    timequery = request.GET.get('timefilter')
-    if timequery == 'thisweek':
-        start_week, end_week = get_week_range(current_date)
-        expenses = Transaction.objects.filter(created_on__range=(start_week, end_week)).order_by("-created_on")
-    if timequery == 'thismonth':
-        start_month, end_month = get_month_range(current_date)
-        expenses = Transaction.objects.filter(created_on__range=(start_month, end_month))
-    if timequery == 'thisyear':
-        expenses = Transaction.objects.filter(created_on__year=2023) #fix year
-
-    # date range
-    date_from_obj = datetime.strptime(request.GET.get('date_from'), "%Y-%m-%d")
-    date_from = timezone.make_aware(date_from_obj)
-
-    date_to_obj = datetime.strptime(request.GET.get('date_to'), "%Y-%m-%d")
-    date_to = timezone.make_aware(date_to_obj)
-    if date_from:
-        if date_to:
-            expenses = Transaction.objects.filter(created_on__date__range=(date_from, date_to))
-
-    # Category Query
-    cat_query = request.GET.get("category_query")
-    cat = Category.objects.get(name=cat_query)
-
-    if cat_query:
-        expenses = cat.expenses.all()
-
-    context = {
-    'query':query,
-    'timequery':timequery,
-    'expenses' : expenses,
-    'total':total,
-    'expenses':expenses,
-    'category':category
-    }
-    
-    return render(request, "transactions.html", context)
-
-
 
 def addexpense(request):
     user = request.user
@@ -172,7 +121,6 @@ def addexpense(request):
             return redirect("home")
     
     return redirect("home")
-
 
 def updateexpense(request, id):
     view_name = "update"
@@ -213,6 +161,7 @@ def updateexpense(request, id):
     }
     return render (request, 'transactions.html', context)
 
+
 def deleteexpense(request, id):
     expense = Transaction.objects.get(id=id)
     category = expense.category
@@ -229,4 +178,54 @@ def deleteexpense(request, id):
 
 
 def reports(request):
-    return render(request, 'reports.html')
+    user = request.user
+
+    # Pie Chart Data
+    data = []
+    expense_category = Category.objects.filter(
+        transactions__transaction_type='expense').filter(user=user).annotate(sum = Sum('transactions__amount'))
+    cat = expense_category.values('name','sum')
+    for i in cat:
+        data.append((i['name'], i['sum']))
+
+
+    # Column Chart Data
+    columnchartdata = []
+    months  = Transaction.objects.filter(user=user).values('updated_on__month').distinct()
+
+    for i in months:
+        exp_sum = Transaction.objects.filter(user=user).filter(
+            updated_on__month=i['updated_on__month']
+            ).filter(
+            transaction_type='expense'
+            ).aggregate(
+                sum = Sum('amount'))
+        
+        inc_sum = Transaction.objects.filter(user=user).filter(
+            updated_on__month=i['updated_on__month']
+            ).filter(
+            transaction_type='income'
+            ).aggregate(
+                sum = Sum('amount'))
+        
+        balance = exp_sum['sum'] - inc_sum['sum']
+        
+        # print([i['updated_on__month'],exp_sum['sum'], inc_sum['sum'], balance])
+
+        columnchartdata.append([i['updated_on__month'], exp_sum['sum'], inc_sum['sum'], balance])
+
+
+    month_dict = {1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec',}
+
+    sortedcolumnchartdata = sorted(columnchartdata)
+
+    for i in sortedcolumnchartdata:
+        i[0] = month_dict[i[0]]
+
+    context = {
+        'data':data,
+        'sortedcolumnchartdata':sortedcolumnchartdata
+    }
+
+
+    return render(request, 'reports.html', context)

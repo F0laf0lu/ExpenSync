@@ -31,7 +31,7 @@
                         <th scope="col">Category</th>
                         <th scope="col">Description</th>
                         <th scope="col">Amount</th>
-                        
+                        <th scope="col">Date</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -42,6 +42,7 @@
                       <th scope="row"><a href="{% url "update-expense" data.id %}">{{data.description}}</a><br>
                       </th>
                       <td>${{data.amount|intcomma}}</td>
+                      <td>{{data.updated_on|date}}</td>
                     </tr>
                     {% endfor %}
                   </tbody>
