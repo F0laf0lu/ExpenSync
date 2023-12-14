@@ -49,3 +49,6 @@ def usersignup(request):
     }
     return render(request, "userauth/signup.html", context)
 
+def usersprofile(request, pk):
+
+    return render(request,"userauth/profile.html")

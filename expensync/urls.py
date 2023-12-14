@@ -22,3 +22,7 @@ urlpatterns = [
     path('', include('core.urls')),
     path('', include('userauth.urls'))
 ]
+
+
+
+

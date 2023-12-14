@@ -1,47 +1,19 @@
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from core.models import Transaction, Category
 from . forms import TransactionForm
-from django.db.models import Sum, Count
-from django.utils import timezone
-from datetime import datetime
-import calendar
-from django.core.paginator import Paginator
-from datetime import timedelta   
-
-
-
-current_date = timezone.now()
-
-def get_month_range(input_date):
-    # Get the first day of the month
-    first_day = input_date.replace(day=1)
-
-    # Calculate the last day of the month
-    _, last_day = calendar.monthrange(input_date.year, input_date.month)
-    last_day = input_date.replace(day=last_day)
-
-    return first_day, last_day
-
-def get_week_range(input_date):
-    # Calculate the start of the week (Monday)
-    start_of_week = input_date - timedelta(days=input_date.weekday())
-
-    # Calculate the end of the week (Sunday)
-    end_of_week = start_of_week + timedelta(days=6)
-
-    return start_of_week, end_of_week
-
-
-# custom 404 view
-def custom_404(request, exception):
-    return render(request, 'core/404.html', status=404)
+from django.db.models import Sum
+from django.contrib import messages
 
 
 # Views
 def home(request):
+    
+    print()
+
     form = TransactionForm()
     user_id = request.user.id
-    
+
     transactions = Transaction.objects.filter(
         user=user_id).order_by("-created_on")[0:5]
     
@@ -77,6 +49,7 @@ def home(request):
         'income_total':income_total,
         'balance':balance,
         'form':form, 
+        'data':data
     }
     return render (request, 'index.html', context)
 
@@ -117,8 +90,11 @@ def addexpense(request):
                 amount=amount,
                 description=description
             )
-            
+            messages.success(request, 'Transaction creation successful!', extra_tags=
+            'alert')
             return redirect("home")
+    else:
+        messages.warning(request, 'Error occured')
     
     return redirect("home")
 
@@ -169,7 +145,7 @@ def deleteexpense(request, id):
         expense.delete()
         if Transaction.objects.filter(category=category).count() == 0:
             category.delete()
-        return redirect("home")
+        return redirect("transaction")
     
     context = {
         'expense':expense
@@ -229,3 +205,4 @@ def reports(request):
 
 
     return render(request, 'reports.html', context)
+
