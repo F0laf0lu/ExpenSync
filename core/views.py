@@ -4,13 +4,12 @@ from core.models import Transaction, Category
 from . forms import TransactionForm
 from django.db.models import Sum
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 
 # Views
+@login_required
 def home(request):
-    
-    print()
-
     form = TransactionForm()
     user_id = request.user.id
 
@@ -53,6 +52,8 @@ def home(request):
     }
     return render (request, 'index.html', context)
 
+
+@login_required
 def transactions(request): 
     form = TransactionForm()
     user_id = request.user
@@ -73,11 +74,13 @@ def transactions(request):
 
     return render(request, 'transactions.html', context)
 
+
+@login_required
 def addexpense(request):
     user = request.user
     if request.method == 'POST':
             category_name = request.POST.get('category')
-            category, created = Category.objects.get_or_create(name=category_name)
+            category, created = Category.objects.get_or_create(user=user, name=category_name)
 
             trans_type = request.POST.get('transaction_type')
             amount = request.POST.get('amount')
@@ -98,6 +101,8 @@ def addexpense(request):
     
     return redirect("home")
 
+
+@login_required
 def updateexpense(request, id):
     view_name = "update"
     user = request.user
@@ -138,6 +143,8 @@ def updateexpense(request, id):
     return render (request, 'transactions.html', context)
 
 
+
+@login_required
 def deleteexpense(request, id):
     expense = Transaction.objects.get(id=id)
     category = expense.category
@@ -153,7 +160,10 @@ def deleteexpense(request, id):
     return render(request, "delete_expense.html", context)
 
 
+
+@login_required
 def reports(request):
+    form = TransactionForm()
     user = request.user
 
     # Pie Chart Data
@@ -184,7 +194,8 @@ def reports(request):
             ).aggregate(
                 sum = Sum('amount'))
         
-        balance = exp_sum['sum'] - inc_sum['sum']
+
+        balance = (inc_sum['sum'] or 0) - (exp_sum['sum'] or 0)
         
         # print([i['updated_on__month'],exp_sum['sum'], inc_sum['sum'], balance])
 
@@ -200,9 +211,9 @@ def reports(request):
 
     context = {
         'data':data,
-        'sortedcolumnchartdata':sortedcolumnchartdata
+        'sortedcolumnchartdata':sortedcolumnchartdata,
+        'form':form
     }
-
 
     return render(request, 'reports.html', context)
 

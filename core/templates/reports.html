@@ -22,7 +22,7 @@
 
                 
                 <div id="pieChart"></div>
-
+                {% if data %}
                 <script>
                     document.addEventListener("DOMContentLoaded", () => {
                     new ApexCharts(document.querySelector("#pieChart"), {
@@ -39,7 +39,9 @@
                     });
                 </script>
                 <!-- End Pie Chart -->
-
+                {% else %}
+                <h5>No data yet</h5>
+                {% endif %}
                 </div>
             </div>
             </div>
@@ -52,7 +54,7 @@
 
                 
                 <div id="barChart"></div>
-
+                {% if data %}
                 <script>
                     document.addEventListener("DOMContentLoaded", () => {
                     new ApexCharts(document.querySelector("#barChart"), {
@@ -80,6 +82,9 @@
                     });
                 </script>
                 <!-- End Bar Chart -->
+                {% else %}
+                <h5>No data yet</h5>
+                {% endif %}
 
                 </div>
             </div>
@@ -106,12 +111,13 @@
 
                 <!-- Line Chart -->
                 <div id="lineChart"></div>
-
+                {% for data in sortedcolumnchartdata %}
+                    {% if data.2 %}
                 <script>
                     document.addEventListener("DOMContentLoaded", () => {
                     new ApexCharts(document.querySelector("#lineChart"), {
                         series: [{
-                        name: "Desktops",
+                        name: "Income",
                         data: [{% for data in sortedcolumnchartdata %}{{data.2}},{% endfor %}]
                         }],
                         chart: {
@@ -140,7 +146,10 @@
                     });
                 </script>
                 <!-- End Line Chart -->
-
+                    {% else %}
+                    <h5>No data yet</h5>
+                    {% endif %}
+                {% endfor %}
                 </div>
             </div>
             </div>
@@ -157,7 +166,7 @@
                     document.addEventListener("DOMContentLoaded", () => {
                     new ApexCharts(document.querySelector("#areaChart"), {
                         series: [{
-                        name: "Desktops",
+                        name: "Expense",
                         data: [{% for data in sortedcolumnchartdata %}{{data.1}},{% endfor %}]
                         }],
                         chart: {

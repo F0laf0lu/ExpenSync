@@ -1,6 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django import forms
 from .models import CustomUser
+from django.forms import FileInput, ImageField
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -40,6 +41,11 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomUserChangeForm(UserChangeForm):
+    avatar = ImageField(widget=FileInput)
     class Meta:
         model = CustomUser
-        fields = ("email",)
+        fields = ["first_name", "last_name", "avatar"]
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}), 
+        }
