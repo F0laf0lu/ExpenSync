@@ -1,6 +1,6 @@
 # ExpenSync - Expense Tracking App
 
-## Overvie
+## Overview
 
 Expense Tracker is a web application powered by Django, designed to simplify the management and tracking of personal expenses. With user authentication for secure access, it allows users to effortlessly add, edit, and delete expenses, categorize them for better analysis, and generate insightful reports. The responsive design ensures a seamless experience across devices, providing users with a comprehensive tool to gain control over their financial activities.
 
