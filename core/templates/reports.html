@@ -7,6 +7,7 @@
         <li class="breadcrumb-item active">Reports </li>
         </ol>
 {% endblock nav %}
+
 {% block addexpense %}
                     <a href="#" data-bs-toggle="modal" data-bs-target="#verticalycentered"><button class="btn btn-success">New Entry</button></a>
 {% endblock addexpense %}
@@ -111,7 +112,7 @@
 
                 <!-- Line Chart -->
                 <div id="lineChart"></div>
-                {% for data in sortedcolumnchartdata %}
+                
                     {% if data.2 %}
                 <script>
                     document.addEventListener("DOMContentLoaded", () => {
@@ -149,7 +150,7 @@
                     {% else %}
                     <h5>No data yet</h5>
                     {% endif %}
-                {% endfor %}
+                
                 </div>
             </div>
             </div>
@@ -161,7 +162,7 @@
 
                 <!-- Area Chart -->
                 <div id="areaChart"></div>
-
+                {% if data.2 %}
                 <script>
                     document.addEventListener("DOMContentLoaded", () => {
                     new ApexCharts(document.querySelector("#areaChart"), {
@@ -194,6 +195,9 @@
                     }).render();
                     });
                 </script>
+                {% else %}
+                <h5>No data yet</h5>
+                {% endif %}
                 <!-- End Area Chart -->
 
                 </div>
@@ -204,7 +208,8 @@
             <div class="card">
                 <div class="card-body">
                 <h5 class="card-title">Expense, Income and Balance Summary per Month</h5>
-
+                
+                {% if data %}
                 <!-- Column Chart -->
                 <div id="columnChart"></div>
 
@@ -261,6 +266,9 @@
                     }).render();
                     });
                 </script>
+                {% else %}
+                <h5>No data yet</h5>
+                {% endif %}
                 <!-- End Column Chart -->
                 </div>
             </div>

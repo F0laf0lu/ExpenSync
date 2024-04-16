@@ -8,14 +8,13 @@
         <div class="card-body">
 
           <div class="pt-4 pb-2">
-            <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
-            <p class="text-center small">Enter your username & password to login</p>
+            <h5 class="card-title text-center pb-0 fs-4">Login</h5>
           </div>
 
           <form action="" method="POST" class="row g-3 needs-validation" novalidate>
             {% csrf_token %}
             <div class="col-12">
-              <label for="yourUsername" class="form-label">Email</label>
+              <label for="yourUsername" class="form-label">Email:</label>
               <div class="input-group has-validation">
                 <input type="text" name="email" class="form-control" id="yourUsername" required>
                 <div class="invalid-feedback">Please enter your username.</div>
@@ -23,7 +22,7 @@
             </div>
 
             <div class="col-12">
-              <label for="yourPassword" class="form-label">Password</label>
+              <label for="yourPassword" class="form-label">Password:</label>
               <input type="password" name="password" class="form-control" id="yourPassword" required>
               <div class="invalid-feedback">Please enter your password!</div>
             </div>
